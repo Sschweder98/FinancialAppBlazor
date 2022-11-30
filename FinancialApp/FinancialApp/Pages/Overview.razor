@@ -14,52 +14,51 @@
 <h1>Finance-Front</h1>
 <br>
 <h2>Von @StartDate bis @EndDate</h2>
-<Chart Config="_config"></Chart>
-@*
-<h3>Überblick</h3>
-<div class="chartBox">
-    <canvas id="overviewChart" class="main_chart">></canvas>
+
+<h3>überblick</h3>
+<div class="chartbox">
+    <Chart Config="mainchart"></Chart>
 </div>
 <br>
-<h3>Einnahmen</h3>
-<div class="chartBox">
-    <canvas id="firstChart" class="chart"></canvas>
-    <table id="tableEinnahmen">
+@*<h3>einnahmen</h3>
+<div class="chartbox">
+    <Chart Config="_chart1"></Chart>
+    <table id="tableeinnahmen">
         <tr>
-            <th>Kategorie</th>
-            <th>Summe</th>
+            <th>kategorie</th>
+            <th>summe</th>
         </tr>
     </table>
 </div>
 <br>
-<h3>Ausgaben</h3>
-<h4>Alle</h4>
-<div class="chartBox">
-    <canvas id="secondChart" class="chart"></canvas>
-    <table id="tableAusgabenAlle">
+<h3>ausgaben</h3>
+<h4>alle</h4>
+<div class="chartbox">
+    <Chart Config="_chart2"></Chart>
+    <table id="tableausgabenalle">
         <tr>
-            <th>Kategorie</th>
-            <th>Summe</th>
+            <th>kategorie</th>
+            <th>summe</th>
         </tr>
     </table>
 </div>
-<h4>Fix</h4>
-<div class="chartBox">
-    <canvas id="thirdChart" class="chart"></canvas>
-    <table id="tableAusgabenFix">
+<h4>fix</h4>
+<div class="chartbox">
+    <Chart Config="_chart3"></Chart>
+    <table id="tableausgabenfix">
         <tr>
-            <th>Kategorie</th>
-            <th>Summe</th>
+            <th>kategorie</th>
+            <th>summe</th>
         </tr>
     </table>
 </div>
-<h4>Nicht Fix</h4>
-<div class="chartBox">
-    <canvas id="fourthChart" class="chart"></canvas>
-    <table id="tableAusgabenNichtFix">
+<h4>nicht fix</h4>
+<div class="chartbox">
+    <Chart Config="_chart4"></Chart>
+    <table id="tableausgabennichtfix">
         <tr>
-            <th>Kategorie</th>
-            <th>Summe</th>
+            <th>kategorie</th>
+            <th>summe</th>
         </tr>
     </table>
 </div>*@
@@ -68,11 +67,36 @@
     string StartDate = "01.11.2022";
     string EndDate = "30.11.2022";
 
-    private PieConfig _config;
+    private PieConfig mainchart;
+    private PieConfig _chart1;
+    private PieConfig _chart2;
+    private PieConfig _chart3;
+    private PieConfig _chart4;
+
+    private BankingTransaction[]? Transactions;
 
     protected override void OnInitialized()
     {
-        _config = new PieConfig
+
+
+        //$sql = "SELECT LEFT(T1.date, 10) AS fixedDate, (SELECT ROUND(SUM(VALUE), 2) WHERE date = T1.date) AS summ FROM _finance_data T1 
+        //WHERE T1.category NOT LIKE 'Umbuchung' 
+        //AND T1.DATE >= '" . $from . "' 
+        //AND T1.DATE <= '" . $to . "' 
+        //GROUP BY (T1.date)
+        //ORDER BY T1.date ASC
+
+        Transactions = TransactionsService.GetTransactionsAsync();
+        var overview_x = (from t in Transactions where t.category != "Umbuchung" select t.date).Distinct();
+        var overview_y = new List<Double>();
+
+        foreach (var day in overview_x)
+        {
+            overview_y.add((from t in Transactions where t.date == day select t.value).Sum());
+        }
+
+        //mainchart
+        mainchart = new PieConfig
             {
                 Options = new PieOptions
                 {
@@ -87,7 +111,7 @@
 
         foreach (string color in new[] { "Red", "Yellow", "Green", "Blue" })
         {
-            _config.Data.Labels.Add(color);
+            mainchart.Data.Labels.Add(color);
         }
 
         PieDataset<int> dataset = new PieDataset<int>(new[] { 6, 5, 3, 7 })
@@ -101,6 +125,6 @@
         }
             };
 
-        _config.Data.Datasets.Add(dataset);
+        mainchart.Data.Datasets.Add(dataset);
     }
 }
