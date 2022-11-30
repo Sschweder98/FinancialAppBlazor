@@ -1,0 +1,49 @@
+﻿
+@page "/ImportModule"
+@using System 
+@using System.IO
+@using Microsoft.AspNetCore.Hosting
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.Extensions.Logging
+
+@using FinancialApp.Data
+@using FinancialApp.Models
+
+@inject IWebHostEnvironment Environment
+@inject BankingTransactionService TransactionsService
+
+<h3>Dateien</h3>
+<br>
+<ul>
+    @foreach (var file in files)
+    {
+        <li>@file.Name <button class="btn btn-primary" @onclick="() => Import(file.FullName)">Importieren</button></li>
+    }
+</ul>
+
+
+@code {
+    private List<FileInfo> files = new List<FileInfo>();
+    const String upload_dir = "C:\\Users\\Sebastian\\Desktop\\Test";
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        files.Clear();
+        foreach (string file in Directory.GetFiles(upload_dir))
+        {
+            files.Add(new FileInfo(file));
+        }
+    }
+
+    private async Task Work(String filepath)
+    {
+
+    }
+
+    private void Import(String CsvPath)
+    {
+        TransactionsService.ImportCSVIntoDatabase(CsvPath);
+    }
+
+}

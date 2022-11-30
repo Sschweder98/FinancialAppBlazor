@@ -1,0 +1,52 @@
+﻿@page "/transactions"
+
+<PageTitle>Transactions</PageTitle>
+
+@using FinancialApp.Data
+@using FinancialApp.Models
+@inject BankingTransactionService TransactionsService
+
+<h1>Transaktionen</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Key</th>
+            <th scope="col">Date</th>
+            <th scope="col">Beschreibung 1</th>
+            <th scope="col">Beschreibung 2</th>
+            <th scope="col">Kategorie</th>
+            <th scope="col">Fixe Kosten</th>
+            <th scope="col">Empfänger 1</th>
+            <th scope="col">Empfänger 2</th>
+            <th scope="col">Betrag</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var trans in Transactions)
+        {
+            <tr>
+                <td>@trans.id</td>
+                <td>@trans.uniqe_key</td>
+                <td>@trans.date</td>
+                <td>@trans.description1</td>
+                <td>@trans.description2</td>
+                <td>@trans.category</td>
+                <td>@trans.cost_fixed</td>
+                <td>@trans.recipient1</td>
+                <td>@trans.recipient2</td>
+                <td>@trans.value</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private BankingTransaction[]? Transactions;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Transactions =  TransactionsService.GetTransactionsAsync();
+    }
+}

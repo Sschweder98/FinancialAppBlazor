@@ -1,0 +1,72 @@
+﻿@page "/UploadModule"
+
+@using System 
+@using System.IO
+@using Microsoft.AspNetCore.Hosting
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.Extensions.Logging
+@inject IWebHostEnvironment Environment
+
+<h3>Dateiupload</h3>
+<br>
+@if (STATE == STATE_WAITING)
+{
+    <p>
+        <label>
+            Bitte wählen Sie die Dateien aus die sie hochladen möchten:
+            <br><br>
+            <InputFile OnChange="@LoadFiles" multiple />
+        </label>
+    </p>
+}
+else if (STATE == STATE_UPLOADING)
+{
+    <p>Datei/en werden hochgeladen...</p>
+}
+else
+{
+    <ul>
+        @foreach (var file in loadedFiles)
+        {
+          <li>@file.Name wurde erfolgreich hochgeladen...</li>
+        }
+    </ul>
+    <br>
+    <button class="btn btn-primary" @onclick="Reset">weitere Dateien hochladen</button>
+}
+
+@code {
+    private List<IBrowserFile> loadedFiles = new();
+    private long maxFileSize = 1024 * 1024 * 15;
+    private int maxAllowedFiles = 10;
+    const String upload_dir = "C:\\Users\\Sebastian\\Desktop\\Test";
+    private int STATE = 0;
+    const int STATE_WAITING = 0;
+    const int STATE_UPLOADING = 1;
+    const int STATE_FINISHED = 2;
+
+
+    private async Task LoadFiles(InputFileChangeEventArgs e)
+    {
+        STATE = STATE_UPLOADING;
+        loadedFiles.Clear();
+
+        foreach (var file in e.GetMultipleFiles(maxAllowedFiles))
+        {
+            loadedFiles.Add(file);
+            var path = Path.Combine(upload_dir,
+                    file.Name);
+
+            await using FileStream fs = new(path, FileMode.Create);
+            await file.OpenReadStream(maxFileSize).CopyToAsync(fs);
+        }
+
+        STATE = STATE_FINISHED;
+    }
+
+    private void Reset()
+    {
+        STATE = STATE_WAITING;
+    }
+
+}
