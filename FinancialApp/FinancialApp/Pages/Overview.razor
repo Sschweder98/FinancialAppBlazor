@@ -8,6 +8,7 @@
 @using ChartJs.Blazor.Util;
 @using FinancialApp.Data
 @using FinancialApp.Models
+@using System.Drawing;
 @inject BankingTransactionService TransactionsService
 
 <h3>Übersicht</h3>
@@ -65,8 +66,8 @@
 </div>*@
 
 @code {
-    string StartDate = "01.11.2022";
-    string EndDate = "30.11.2022";
+    DateTime StartDate = Convert.ToDateTime("01.11.2022");
+    DateTime EndDate = Convert.ToDateTime("30.11.2022");
 
     private BarConfig mainchart;
     private PieConfig _chart1;
@@ -76,27 +77,26 @@
 
     private BankingTransaction[]? Transactions;
 
+    IEnumerable<DateTime> overview_x;
+    List<int> overview_y;
+
     protected override void OnInitialized()
     {
-
-
-        //$sql = "SELECT LEFT(T1.date, 10) AS fixedDate, (SELECT ROUND(SUM(VALUE), 2) WHERE date = T1.date) AS summ FROM _finance_data T1 
-        //WHERE T1.category NOT LIKE 'Umbuchung' 
-        //AND T1.DATE >= '" . $from . "' 
-        //AND T1.DATE <= '" . $to . "' 
-        //GROUP BY (T1.date)
-        //ORDER BY T1.date ASC
-
         Transactions = TransactionsService.GetTransactionsAsync();
-        var overview_x = (from t in Transactions where t.category != "Umbuchung" select t.date).Distinct();
-        var overview_y= new List<Double>();
+        overview_y = new List<int>();
+        generateCharts();
+    }
+
+    public void generateCharts()
+    {
+        overview_x = (from t in Transactions where t.category != "Umbuchung" && t.date > StartDate && t.date < EndDate orderby t.date ascending select t.date).Distinct();
+        overview_y.Clear();
 
         foreach (var day in overview_x)
         {
-            overview_y.Add((from t in Transactions where t.date == day select t.value).Sum());
+            overview_y.Add(Convert.ToInt32((from t in Transactions where t.date == day select t.value).Sum()));
         }
 
-        //mainchart
         mainchart = new BarConfig
             {
                 Options = new BarOptions
@@ -105,19 +105,25 @@
                     Title = new OptionsTitle
                     {
                         Display = true,
-                        Text = "Insgesamt"
+                        Text = "Umsatz"
                     }
                 }
             };
 
-        foreach (string color in new[] { "Red", "Yellow", "Green", "Blue" })
+        BarDataset<int> dataset = new BarDataset<int>(overview_y, false)
+            {
+                Label = "Insegesamt",
+                BackgroundColor = ColorUtil.FromDrawingColor(Color.Blue),
+                BorderColor = ColorUtil.FromDrawingColor(Color.DarkBlue),
+                BorderWidth = 1
+            };
+
+        foreach (DateTime day in overview_x)
         {
-            mainchart.Data.Labels.Add(color);
+            mainchart.Data.Labels.Add(day.ToString("dd.MM"));
         }
 
-        //BarDataset<int> dataset = new BarDataset<int>(overview_x, true);
-        //BarDataset<int> dataset2 = new BarDataset<int>(overview_y, false);
-
-        //mainchart.Data.Datasets.Add(dataset);
+        mainchart.Data.Datasets.Add(dataset);
     }
+
 }
