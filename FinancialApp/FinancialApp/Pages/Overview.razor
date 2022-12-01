@@ -4,6 +4,7 @@
 
 @using ChartJs.Blazor.Common;
 @using ChartJs.Blazor.PieChart;
+@using ChartJs.Blazor.BarChart;
 @using ChartJs.Blazor.Util;
 @using FinancialApp.Data
 @using FinancialApp.Models
@@ -67,7 +68,7 @@
     string StartDate = "01.11.2022";
     string EndDate = "30.11.2022";
 
-    private PieConfig mainchart;
+    private BarConfig mainchart;
     private PieConfig _chart1;
     private PieConfig _chart2;
     private PieConfig _chart3;
@@ -88,23 +89,23 @@
 
         Transactions = TransactionsService.GetTransactionsAsync();
         var overview_x = (from t in Transactions where t.category != "Umbuchung" select t.date).Distinct();
-        var overview_y = new List<Double>();
+        var overview_y= new List<Double>();
 
         foreach (var day in overview_x)
         {
-            overview_y.add((from t in Transactions where t.date == day select t.value).Sum());
+            overview_y.Add((from t in Transactions where t.date == day select t.value).Sum());
         }
 
         //mainchart
-        mainchart = new PieConfig
+        mainchart = new BarConfig
             {
-                Options = new PieOptions
+                Options = new BarOptions
                 {
                     Responsive = true,
                     Title = new OptionsTitle
                     {
                         Display = true,
-                        Text = "ChartJs.Blazor Pie Chart"
+                        Text = "Insgesamt"
                     }
                 }
             };
@@ -114,16 +115,8 @@
             mainchart.Data.Labels.Add(color);
         }
 
-        PieDataset<int> dataset = new PieDataset<int>(new[] { 6, 5, 3, 7 })
-            {
-                BackgroundColor = new[]
-                {
-            ColorUtil.ColorHexString(255, 99, 132), // Slice 1 aka "Red"
-            ColorUtil.ColorHexString(255, 205, 86), // Slice 2 aka "Yellow"
-            ColorUtil.ColorHexString(75, 192, 192), // Slice 3 aka "Green"
-            ColorUtil.ColorHexString(54, 162, 235), // Slice 4 aka "Blue"
-        }
-            };
+        BarDataset<int> dataset = new BarDataset<int>(overview_x, true);
+        BarDataset<int> dataset2 = new BarDataset<int>(overview_y, false);
 
         mainchart.Data.Datasets.Add(dataset);
     }
