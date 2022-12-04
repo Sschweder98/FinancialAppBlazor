@@ -18,6 +18,7 @@
     @foreach (var file in files)
     {
         <li>@file.Name <button class="btn btn-primary" @onclick="() => Import(file.FullName)">Importieren</button></li>
+        <br />
     }
 </ul>
 

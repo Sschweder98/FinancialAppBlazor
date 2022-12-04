@@ -11,92 +11,182 @@
 @using System.Drawing;
 @inject BankingTransactionService TransactionsService
 
-<h3>Übersicht</h3>
+<style>
 
-<h1>Finance-Front</h1>
+  .chartBox {
+    clear: both;
+    display: flex;
+    padding: 100px;
+    height: 1000px;
+  }
+
+  p.ChartHeadLine {
+    font-size: 250%;
+    font-weight: 600;
+    margin: 50px;
+    text-align: center;
+}
+
+  table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+    height: 0px;
+    margin-top: 100px;
+  }
+
+  td,
+  th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+  }
+
+  tr:nth-child(even) {
+    background-color: #dddddd;
+  }
+
+
+  Chart {
+    height: 600px;
+  }
+</style>
+
+<h1>Übersicht</h1>
 <br>
-<h2>Von @StartDate bis @EndDate</h2>
-
-<h3>überblick</h3>
+<p>Start-Datum (dd.MM.yyyy)</p>
+<Input value="@StartDate.ToString("dd.MM.yyyy")" @onchange="ChangeStartDate" />
+<br>
+<br>
+<p>End-Datum (dd.MM.yyyy)</p>
+<Input value="@EndDate.ToString("dd.MM.yyyy")" @onchange="ChangeEndDate" />
+<br>
+<br>
+<button class="btn btn-primary" @onclick="UpdateCharts">Anzeigen</button>
+<br>
+<br>
+<hr>
+<br>
+<br>
 <div class="chartbox">
-    <Chart Config="mainchart"></Chart>
+     <p class="ChartHeadLine">Nach Tag</p>
+     <Chart Config="mainchart"></Chart>
 </div>
-<br>
-@*<h3>einnahmen</h3>
+<hr>
 <div class="chartbox">
-    <Chart Config="_chart1"></Chart>
+    <p class="ChartHeadLine">Einnahmen</p>
+    <Chart Config="incomechart"></Chart>
     <table id="tableeinnahmen">
+        <thead>
         <tr>
-            <th>kategorie</th>
-            <th>summe</th>
+            <th>Kategorie</th>
+            <th>Summe</th>
         </tr>
+        </thead>
+        <tbody>
+            @if (income_x.Count() > 0 && income_y.Count() > 0)
+            {
+                @for (int i = 0; i < income_x.Count(); i++)
+                {
+                    <tr>
+                        <td>@income_x.ElementAt(i)</td>
+                        <td>@income_y[i]</td>
+                    </tr>
+                }
+            }
+        </tbody>
     </table>
 </div>
-<br>
-<h3>ausgaben</h3>
-<h4>alle</h4>
+<hr>
 <div class="chartbox">
-    <Chart Config="_chart2"></Chart>
+    <p class="ChartHeadLine">Ausgaben - Insgesamt</p>
+    <Chart Config="outcomechart"></Chart>
     <table id="tableausgabenalle">
-        <tr>
-            <th>kategorie</th>
-            <th>summe</th>
-        </tr>
+        <thead>
+            <tr>
+                <th>Kategorie</th>
+                <th>Summe</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (outcome_x.Count() > 0 && outcome_y.Count() > 0)
+            {
+                @for (int i = 0; i < outcome_x.Count(); i++)
+                {
+                    <tr>
+                        <td>@outcome_x.ElementAt(i)</td>
+                        <td>@outcome_y[i]</td>
+                    </tr>
+                }
+            }
+        </tbody>
     </table>
 </div>
-<h4>fix</h4>
+@*<hr>
 <div class="chartbox">
+    <p class="ChartHeadLine">Ausgaben - Fix</p>
     <Chart Config="_chart3"></Chart>
     <table id="tableausgabenfix">
         <tr>
-            <th>kategorie</th>
-            <th>summe</th>
+            <th>Kategorie</th>
+            <th>Summe</th>
         </tr>
     </table>
 </div>
-<h4>nicht fix</h4>
+<hr>
 <div class="chartbox">
+    <p class="ChartHeadLine">Ausgaben - Variabel</p>
     <Chart Config="_chart4"></Chart>
     <table id="tableausgabennichtfix">
         <tr>
-            <th>kategorie</th>
-            <th>summe</th>
+            <th>Kategorie</th>
+            <th>Summe</th>
         </tr>
     </table>
 </div>*@
 
 @code {
-    DateTime StartDate = Convert.ToDateTime("01.11.2022");
-    DateTime EndDate = Convert.ToDateTime("30.11.2022");
+    DateTime StartDate = DateTime.Now.AddDays(-DateTime.Now.Day);
+    DateTime EndDate = DateTime.Now;
 
     private BarConfig mainchart;
-    private PieConfig _chart1;
-    private PieConfig _chart2;
-    private PieConfig _chart3;
-    private PieConfig _chart4;
+    private PieConfig incomechart;
+    private PieConfig outcomechart;
+
+    BarDataset<int> main_dataset;
+    BarDataset<int> income_dataset;
 
     private BankingTransaction[]? Transactions;
 
     IEnumerable<DateTime> overview_x;
-    List<int> overview_y;
+    List<int> overview_y = new List<int>();
+
+    IEnumerable<String> income_x;
+    List<int> income_y = new List<int>();
+
+    IEnumerable<String> outcome_x;
+    List<int> outcome_y = new List<int>();
+
+
 
     protected override void OnInitialized()
     {
         Transactions = TransactionsService.GetTransactionsAsync();
-        overview_y = new List<int>();
-        generateCharts();
+        CreateCharts();
+        UpdateCharts();
     }
 
-    public void generateCharts()
+    public void ChangeStartDate(ChangeEventArgs e)
     {
-        overview_x = (from t in Transactions where t.category != "Umbuchung" && t.date > StartDate && t.date < EndDate orderby t.date ascending select t.date).Distinct();
-        overview_y.Clear();
+        StartDate = Convert.ToDateTime(e.Value);
+    }
+    public void ChangeEndDate(ChangeEventArgs e)
+    {
+        EndDate = Convert.ToDateTime(e.Value);
+    }
 
-        foreach (var day in overview_x)
-        {
-            overview_y.Add(Convert.ToInt32((from t in Transactions where t.date == day select t.value).Sum()));
-        }
-
+    public void CreateCharts()
+    {
         mainchart = new BarConfig
             {
                 Options = new BarOptions
@@ -110,20 +200,133 @@
                 }
             };
 
-        BarDataset<int> dataset = new BarDataset<int>(overview_y, false)
+        incomechart = new PieConfig
             {
-                Label = "Insegesamt",
+                Options = new PieOptions
+                {
+                    Responsive = true,
+                    Title = new OptionsTitle
+                    {
+                        Display = true,
+                        Text = "Umsatz"
+                    }
+                }
+            };
+
+        outcomechart = new PieConfig
+            {
+                Options = new PieOptions
+                {
+                    Responsive = true,
+                    Title = new OptionsTitle
+                    {
+                        Display = true,
+                        Text = "Umsatz"
+                    }
+                }
+            };
+    }
+
+    public void UpdateCharts()
+    {
+        //Auswertung nach Tag
+        overview_x = (from t in Transactions where t.category != "Umbuchung" && t.date > StartDate && t.date < EndDate orderby t.date ascending select t.date).Distinct();
+        overview_y.Clear();
+
+        foreach (var day in overview_x)
+        {
+            overview_y.Add(Convert.ToInt32((from t in Transactions where t.date == day select t.value).Sum()));
+        }
+
+
+        main_dataset = new BarDataset<int>(overview_y, false)
+            {
+                Label = "Umsatz",
                 BackgroundColor = ColorUtil.FromDrawingColor(Color.Blue),
                 BorderColor = ColorUtil.FromDrawingColor(Color.DarkBlue),
                 BorderWidth = 1
             };
 
+        mainchart.Data.Labels.Clear();
         foreach (DateTime day in overview_x)
         {
             mainchart.Data.Labels.Add(day.ToString("dd.MM"));
         }
 
-        mainchart.Data.Datasets.Add(dataset);
+        mainchart.Data.Datasets.Clear();
+        mainchart.Data.Datasets.Add(main_dataset);
+
+        //Auswertung: Einkommen
+        income_x = (from t in Transactions where t.category != "Umbuchung" && t.date > StartDate && t.date < EndDate && t.value > 0.0 select t.category).Distinct();
+        income_y.Clear();
+        incomechart.Data.Labels.Clear();
+        foreach (var category in income_x)
+        {
+            income_y.Add(Convert.ToInt32((from t in Transactions where t.category == category && t.date > StartDate && t.date < EndDate select t.value).Sum()));
+            incomechart.Data.Labels.Add(category);
+        } 
+
+        PieDataset<int> income_dataset = new PieDataset<int>(income_y, true)
+            {
+                BackgroundColor = new[]
+                {
+            ColorUtil.ColorHexString(255, 99, 132), // Slice 1 aka "Red"
+            ColorUtil.ColorHexString(255, 205, 86), // Slice 2 aka "Yellow"
+            ColorUtil.ColorHexString(75, 192, 192), // Slice 3 aka "Green"
+            ColorUtil.RandomColorString(),
+            ColorUtil.RandomColorString(),
+            ColorUtil.RandomColorString(),
+            ColorUtil.RandomColorString(),
+            ColorUtil.RandomColorString()
+            }
+        };
+
+        incomechart.Data.Datasets.Clear();
+        incomechart.Data.Datasets.Add(income_dataset);
+
+        //Auswertung: Ausgaben
+        outcome_x = (from t in Transactions where t.category != "Umbuchung" && t.date > StartDate && t.date < EndDate && t.value < 0.0 select t.category).Distinct();
+        outcome_y.Clear();
+        outcomechart.Data.Labels.Clear();
+        foreach (var category in outcome_x)
+        {
+            outcome_y.Add(Convert.ToInt32((from t in Transactions where t.category == category && t.date > StartDate && t.date < EndDate select t.value).Sum()));
+            outcomechart.Data.Labels.Add(category);
+        }
+
+        PieDataset<int> outcome_dataset = new PieDataset<int>(outcome_y, true)
+            {
+                BackgroundColor = new[]
+                    {
+            ColorUtil.ColorHexString(255, 99, 132), // Slice 1 aka "Red"
+            ColorUtil.ColorHexString(255, 205, 86), // Slice 2 aka "Yellow"
+            ColorUtil.ColorHexString(75, 192, 192), // Slice 3 aka "Green"
+            ColorUtil.RandomColorString(),
+            ColorUtil.RandomColorString(),
+            ColorUtil.RandomColorString(),
+            ColorUtil.RandomColorString(),
+            ColorUtil.RandomColorString(),
+            ColorUtil.RandomColorString(),
+            ColorUtil.RandomColorString(),
+            ColorUtil.RandomColorString(),
+            ColorUtil.RandomColorString(),
+            ColorUtil.RandomColorString(),
+            ColorUtil.RandomColorString(),
+            ColorUtil.RandomColorString(),
+            ColorUtil.RandomColorString(),
+            ColorUtil.RandomColorString(),
+            ColorUtil.RandomColorString(),
+            ColorUtil.RandomColorString(),
+            ColorUtil.RandomColorString(),
+            ColorUtil.RandomColorString(),
+            ColorUtil.RandomColorString(),
+            ColorUtil.RandomColorString()
+            }
+            };
+
+        outcomechart.Data.Datasets.Clear();
+        outcomechart.Data.Datasets.Add(outcome_dataset);
+
     }
 
 }
