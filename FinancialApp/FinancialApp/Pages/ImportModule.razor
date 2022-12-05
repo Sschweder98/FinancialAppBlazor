@@ -1,11 +1,12 @@
-﻿
-@page "/ImportModule"
+﻿@page "/ImportModule"
+
+<PageTitle>Importmodul</PageTitle>
+
 @using System 
 @using System.IO
 @using Microsoft.AspNetCore.Hosting
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.Extensions.Logging
-
 @using FinancialApp.Data
 @using FinancialApp.Models
 
@@ -22,11 +23,9 @@
     }
 </ul>
 
-
 @code {
     private List<FileInfo> files = new List<FileInfo>();
     const String upload_dir = "C:\\Users\\Sebastian\\Desktop\\Test";
-
 
     protected override async Task OnInitializedAsync()
     {
@@ -37,14 +36,8 @@
         }
     }
 
-    private async Task Work(String filepath)
-    {
-
-    }
-
     private void Import(String CsvPath)
     {
         TransactionsService.ImportCSVIntoDatabase(CsvPath);
     }
-
 }

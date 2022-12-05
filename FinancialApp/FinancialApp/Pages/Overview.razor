@@ -1,6 +1,6 @@
 ﻿@page "/overview"
 
-<PageTitle>Übersicht</PageTitle>
+<PageTitle>Auswertung</PageTitle>
 
 @using ChartJs.Blazor.Common;
 @using ChartJs.Blazor.PieChart;
@@ -9,65 +9,21 @@
 @using FinancialApp.Data
 @using FinancialApp.Models
 @using System.Drawing;
+
 @inject BankingTransactionService TransactionsService
-
-<style>
-
-  .chartBox {
-    clear: both;
-    display: flex;
-    padding: 100px;
-    height: 1000px;
-  }
-
-  p.ChartHeadLine {
-    font-size: 250%;
-    font-weight: 600;
-    margin: 50px;
-    text-align: center;
-}
-
-  table {
-    font-family: arial, sans-serif;
-    border-collapse: collapse;
-    width: 100%;
-    height: 0px;
-    margin-top: 100px;
-  }
-
-  td,
-  th {
-    border: 1px solid #dddddd;
-    text-align: left;
-    padding: 8px;
-  }
-
-  tr:nth-child(even) {
-    background-color: #dddddd;
-  }
-
-
-  Chart {
-    height: 600px;
-  }
-</style>
 
 <h1>Übersicht</h1>
 <br>
 <p>Start-Datum (dd.MM.yyyy)</p>
 <Input value="@StartDate.ToString("dd.MM.yyyy")" @onchange="ChangeStartDate" />
-<br>
-<br>
+<br><br>
 <p>End-Datum (dd.MM.yyyy)</p>
 <Input value="@EndDate.ToString("dd.MM.yyyy")" @onchange="ChangeEndDate" />
-<br>
-<br>
+<br><br>
 <button class="btn btn-primary" @onclick="UpdateCharts">Anzeigen</button>
-<br>
-<br>
+<br><br>
 <hr>
-<br>
-<br>
+<br><br>
 <div class="chartbox">
      <p class="ChartHeadLine">Nach Tag</p>
      <Chart Config="mainchart"></Chart>
@@ -122,52 +78,28 @@
         </tbody>
     </table>
 </div>
-@*<hr>
-<div class="chartbox">
-    <p class="ChartHeadLine">Ausgaben - Fix</p>
-    <Chart Config="_chart3"></Chart>
-    <table id="tableausgabenfix">
-        <tr>
-            <th>Kategorie</th>
-            <th>Summe</th>
-        </tr>
-    </table>
-</div>
-<hr>
-<div class="chartbox">
-    <p class="ChartHeadLine">Ausgaben - Variabel</p>
-    <Chart Config="_chart4"></Chart>
-    <table id="tableausgabennichtfix">
-        <tr>
-            <th>Kategorie</th>
-            <th>Summe</th>
-        </tr>
-    </table>
-</div>*@
 
 @code {
     DateTime StartDate = DateTime.Now.AddDays(-DateTime.Now.Day);
     DateTime EndDate = DateTime.Now;
 
-    private BarConfig mainchart;
-    private PieConfig incomechart;
-    private PieConfig outcomechart;
+    private BarConfig? mainchart;
+    private PieConfig? incomechart;
+    private PieConfig? outcomechart;
 
-    BarDataset<int> main_dataset;
-    BarDataset<int> income_dataset;
+    BarDataset<int>? main_dataset;
+    BarDataset<int>? income_dataset;
 
     private BankingTransaction[]? Transactions;
 
-    IEnumerable<DateTime> overview_x;
+    IEnumerable<DateTime>? overview_x;
     List<int> overview_y = new List<int>();
 
-    IEnumerable<String> income_x;
+    IEnumerable<String>? income_x;
     List<int> income_y = new List<int>();
 
-    IEnumerable<String> outcome_x;
+    IEnumerable<String>? outcome_x;
     List<int> outcome_y = new List<int>();
-
-
 
     protected override void OnInitialized()
     {
@@ -238,7 +170,6 @@
             overview_y.Add(Convert.ToInt32((from t in Transactions where t.date == day select t.value).Sum()));
         }
 
-
         main_dataset = new BarDataset<int>(overview_y, false)
             {
                 Label = "Umsatz",
@@ -270,9 +201,9 @@
             {
                 BackgroundColor = new[]
                 {
-            ColorUtil.ColorHexString(255, 99, 132), // Slice 1 aka "Red"
-            ColorUtil.ColorHexString(255, 205, 86), // Slice 2 aka "Yellow"
-            ColorUtil.ColorHexString(75, 192, 192), // Slice 3 aka "Green"
+            ColorUtil.ColorHexString(255, 99, 132),
+            ColorUtil.ColorHexString(255, 205, 86),
+            ColorUtil.ColorHexString(75, 192, 192),
             ColorUtil.RandomColorString(),
             ColorUtil.RandomColorString(),
             ColorUtil.RandomColorString(),
@@ -297,36 +228,34 @@
         PieDataset<int> outcome_dataset = new PieDataset<int>(outcome_y, true)
             {
                 BackgroundColor = new[]
-                    {
-            ColorUtil.ColorHexString(255, 99, 132), // Slice 1 aka "Red"
-            ColorUtil.ColorHexString(255, 205, 86), // Slice 2 aka "Yellow"
-            ColorUtil.ColorHexString(75, 192, 192), // Slice 3 aka "Green"
-            ColorUtil.RandomColorString(),
-            ColorUtil.RandomColorString(),
-            ColorUtil.RandomColorString(),
-            ColorUtil.RandomColorString(),
-            ColorUtil.RandomColorString(),
-            ColorUtil.RandomColorString(),
-            ColorUtil.RandomColorString(),
-            ColorUtil.RandomColorString(),
-            ColorUtil.RandomColorString(),
-            ColorUtil.RandomColorString(),
-            ColorUtil.RandomColorString(),
-            ColorUtil.RandomColorString(),
-            ColorUtil.RandomColorString(),
-            ColorUtil.RandomColorString(),
-            ColorUtil.RandomColorString(),
-            ColorUtil.RandomColorString(),
-            ColorUtil.RandomColorString(),
-            ColorUtil.RandomColorString(),
-            ColorUtil.RandomColorString(),
-            ColorUtil.RandomColorString()
-            }
+                {
+                ColorUtil.ColorHexString(255, 99, 132),
+                ColorUtil.ColorHexString(255, 205, 86),
+                ColorUtil.ColorHexString(75, 192, 192),
+                ColorUtil.RandomColorString(),
+                ColorUtil.RandomColorString(),
+                ColorUtil.RandomColorString(),
+                ColorUtil.RandomColorString(),
+                ColorUtil.RandomColorString(),
+                ColorUtil.RandomColorString(),
+                ColorUtil.RandomColorString(),
+                ColorUtil.RandomColorString(),
+                ColorUtil.RandomColorString(),
+                ColorUtil.RandomColorString(),
+                ColorUtil.RandomColorString(),
+                ColorUtil.RandomColorString(),
+                ColorUtil.RandomColorString(),
+                ColorUtil.RandomColorString(),
+                ColorUtil.RandomColorString(),
+                ColorUtil.RandomColorString(),
+                ColorUtil.RandomColorString(),
+                ColorUtil.RandomColorString(),
+                ColorUtil.RandomColorString(),
+                ColorUtil.RandomColorString()
+                }
             };
 
         outcomechart.Data.Datasets.Clear();
         outcomechart.Data.Datasets.Add(outcome_dataset);
-
     }
-
 }

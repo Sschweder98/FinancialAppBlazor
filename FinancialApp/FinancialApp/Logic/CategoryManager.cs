@@ -156,8 +156,6 @@ namespace FinancialApp.Logic
 
             //Sonstiges
             return getCategoryByName("Sonstiges");
-
-
         }
 
         public Boolean isFixed(BankingTransaction _Data)

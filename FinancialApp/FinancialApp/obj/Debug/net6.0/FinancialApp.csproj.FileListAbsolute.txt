@@ -42,3 +42,5 @@ C:\Users\Sebastian\Documents\Programming\Repo\Sschweder98\FinancialAppBlazor\Fin
 C:\Users\Sebastian\Documents\Programming\Repo\Sschweder98\FinancialAppBlazor\FinancialApp\FinancialApp\obj\Debug\net6.0\FinancialApp.csproj.CopyComplete
 C:\Users\Sebastian\Documents\Programming\Repo\Sschweder98\FinancialAppBlazor\FinancialApp\FinancialApp\bin\Debug\net6.0\ChartJs.Blazor.dll
 C:\Users\Sebastian\Documents\Programming\Repo\Sschweder98\FinancialAppBlazor\FinancialApp\FinancialApp\bin\Debug\net6.0\Newtonsoft.Json.dll
+C:\Users\Sebastian\Documents\Programming\Repo\Sschweder98\FinancialAppBlazor\FinancialApp\FinancialApp\obj\Debug\net6.0\scopedcss\Pages\Overview.razor.rz.scp.css
+C:\Users\Sebastian\Documents\Programming\Repo\Sschweder98\FinancialAppBlazor\FinancialApp\FinancialApp\obj\Debug\net6.0\scopedcss\Pages\Index.razor.rz.scp.css
